@@ -36,9 +36,12 @@ def parse_page(html):
             } )
     for author in soup.select('.tab-bbs-list'):
         for a in author.select('.author'):
+            uid: str|None = a.get('href')
+            if uid is not None:
+                uid = uid.strip('/').split('/')[-1]
             authors.append( {
                 'author': a.get_text().strip(),
-                'uid': a.get('href').strip('/').split('/')[-1],
+                'uid': uid, # None or str
             } )
     if len(titles) != len(authors):
         raise ValueError("len(titles) != len(authors)")
@@ -88,7 +91,7 @@ def scraper(forum_id: str, session) -> bool:
             file.write("--End--")
             print("--End--")
             break
-        print(nextPage, end='\r')
+        print(nextPage, end='       \r')
         url = urljoin(base_url, nextPage)
 
     file.close()
