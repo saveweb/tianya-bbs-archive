@@ -101,7 +101,7 @@ def main():
     # forum_id = input('版id：')
     # scraper(forum_id=str(forum_id), session=session)
     
-    for forum_id in range(1000):
+    for forum_id in range(1200):
         print(f'Forum ID: {forum_id} ...')
         scraper(forum_id=str(forum_id), session=session)
 
