@@ -5,6 +5,7 @@
 import requests
 import datetime
 import os
+import sys
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
@@ -15,10 +16,12 @@ def create_session():
     })
     return session
 
-def get_page(url, session=None):
+def get_page(url, session):
     response = session.get(url)
     if response.status_code == 200:
         return response.text
+    else:
+        return None
 
 def parse_page(html):
     soup = BeautifulSoup(html, 'lxml')
@@ -51,31 +54,51 @@ def mk_dir(dir='data'):
     if not os.path.exists(dir):
         os.mkdir(dir)
 
-def main():
-    try:
-        session = create_session()
-        forum_id = input('版id：')
-        base_url = 'http://bbs.tianya.cn/'
-        url = base_url + 'list.jsp?item=' + forum_id + '&order=1'
-        mk_dir('data')
+def isExistForumID(url: str, session):
+    response = get_page(url, session)
+    if response:
+        return True
+    else:
+        return False
+
+def scraper(forum_id: str, session) -> bool:
+    if not forum_id or not session:
+        sys.exit(1)
+    base_url = 'http://bbs.tianya.cn/'
+    url = base_url + 'list.jsp?item=' + forum_id + '&order=1'
+    if isExistForumID(url=url,session=session):
         file = open(f'data/{forum_id}-{datetime.datetime.now().strftime("%Y%m%d")}.txt', 'w', encoding='utf-8')
-        while url:
-            html = get_page(url, session)
-            for item in parse_page(html):
-                file.write(str(item) + '\n')
-            soup = BeautifulSoup(html, 'lxml')
-            nextPage = soup.select('.short-pages-2 a')[-1].get('href')
-            if "list.jsp" not in nextPage:
-                file.write("--End--")
-                print("--End--")
-                break
-            print(nextPage)
-            url = urljoin(base_url, nextPage)
-    except Exception as e:
-        print(e)
-    finally:
-        if 'file' in locals():
-            file.close()
+    else:
+        print(f'ID: {forum_id} is not exist')
+        return False
+    while url:
+        html = get_page(url, session)
+        if not html:
+            break
+        for item in parse_page(html):
+            file.write(str(item) + '\n')
+        soup = BeautifulSoup(html, 'lxml')
+        nextPage = soup.select('.short-pages-2 a')[-1].get('href')
+        if "list.jsp" not in nextPage:
+            file.write("--End--")
+            print("--End--")
+            break
+        print(nextPage, end='\r')
+        url = urljoin(base_url, nextPage)
+
+    file.close()
+    return True
+
+def main():
+    mk_dir('data')
+    session = create_session()
+    
+    # forum_id = input('版id：')
+    # scraper(forum_id=str(forum_id), session=session)
+    
+    for forum_id in range(1000):
+        print(f'Forum ID: {forum_id} ...')
+        scraper(forum_id=str(forum_id), session=session)
 
 if __name__ == '__main__':
     main()
