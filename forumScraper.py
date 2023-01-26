@@ -54,19 +54,24 @@ def mk_dir(dir='data'):
     if not os.path.exists(dir):
         os.mkdir(dir)
 
-def isExistForumID(url: str, session):
+def isExistForumURL(url: str, session) -> bool:
     response = get_page(url, session)
     if response:
         return True
     else:
         return False
 
+def isExistForumID(forum_id: str, session) -> bool:
+    base_url = 'http://bbs.tianya.cn/'
+    url = base_url + 'list.jsp?item=' + forum_id + '&order=1'
+    return isExistForumURL(url=url,session=session)
+
 def scraper(forum_id: str, session) -> bool:
     if not forum_id or not session:
         sys.exit(1)
     base_url = 'http://bbs.tianya.cn/'
     url = base_url + 'list.jsp?item=' + forum_id + '&order=1'
-    if isExistForumID(url=url,session=session):
+    if isExistForumURL(url=url,session=session):
         file = open(f'data/{forum_id}-{datetime.datetime.now().strftime("%Y%m%d")}.txt', 'w', encoding='utf-8')
     else:
         print(f'ID: {forum_id} is not exist')
