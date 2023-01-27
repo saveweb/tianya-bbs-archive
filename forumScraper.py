@@ -44,14 +44,20 @@ def parse_page(html):
                 'uid': uid, # None or str
             } )
     if len(titles) != len(authors):
-        raise ValueError("len(titles) != len(authors)")
-    for i in range(len(titles)):
-        yield {
-            'title': titles[i]['title'],
-            'link': titles[i]['link'],
-            'author': authors[i]['author'],
-            'uid': authors[i]['uid'],
-        }
+        print('Waring: len(titles) != len(authors), just save "title" and "link"...')
+        for i in range(len(titles)):
+            yield {
+                'title': titles[i]['title'],
+                'link': titles[i]['link'],
+            }
+    else:
+        for i in range(len(titles)):
+            yield {
+                'title': titles[i]['title'],
+                'link': titles[i]['link'],
+                'author': authors[i]['author'],
+                'uid': authors[i]['uid'],
+            }
 
 def mk_dir(dir='data'):
     if not os.path.exists(dir):
@@ -104,7 +110,7 @@ def main():
     # forum_id = input('版id：')
     # scraper(forum_id=str(forum_id), session=session)
     
-    for forum_id in range(1200):
+    for forum_id in range(39,1200):
         print(f'Forum ID: {forum_id} ...')
         scraper(forum_id=str(forum_id), session=session)
 
